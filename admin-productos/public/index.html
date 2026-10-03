@@ -1,46 +1,518 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin de Productos</title>
-  <link rel="stylesheet" href="estilos.css">
-</head>
-<body>
-  <section id="login" class="card-login">
-    <h1>Iniciar sesion</h1>
-    <p class="hint">Usuario: <b>admin</b> &nbsp;·&nbsp; Contrasena: <b>1234</b></p>
-    <input id="usuario" placeholder="Usuario">
-    <input id="clave" type="password" placeholder="Contrasena">
-    <button id="btn-login">Entrar</button>
-    <p id="login-msg" class="msg-error"></p>
-  </section>
-
-  <section id="admin" class="oculto">
-    <header class="barra">
-      <h1>Administracion de Productos</h1>
-      <button id="btn-logout" class="btn-sec">Cerrar sesion</button>
-    </header>
-    <div class="contenido">
-      <div class="panel">
-        <h2>Agregar / editar producto</h2>
-        <div class="form">
-          <input id="nombre" placeholder="Nombre del producto">
-          <input id="precio" type="number" placeholder="Precio (Q)">
-          <input id="stock"  type="number" placeholder="Stock">
-          <button id="btn-guardar">Agregar producto</button>
-        </div>
-        <p id="form-msg" class="msg-error"></p>
-      </div>
-      <div class="panel">
-        <h2>Catalogo (<span id="contador-productos">0</span> productos)</h2>
-        <table id="tabla-productos">
-          <thead><tr><th>Nombre</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#153c32" />
+    <title>Nexo · Administración de productos</title>
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="estilos.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <div id="boot" class="boot" role="status">
+      Conectando con tu inventario…
     </div>
-  </section>
-  <script src="app.js"></script>
-</body>
+    <main id="login" class="auth-layout oculto">
+      <section class="auth-story">
+        <a class="brand" href="/" aria-label="Nexo, inicio"
+          ><span class="brand-icon">n</span> nexo<span class="brand-dot"
+            >.</span
+          ></a
+        >
+        <div class="story-copy">
+          <span class="eyebrow">TU NEGOCIO, EN ORDEN</span>
+          <h1>Más claridad.<br />Mejor inventario.</h1>
+          <p>
+            Productos, existencias y equipo.<br />Todo conectado en un solo
+            lugar.
+          </p>
+        </div>
+        <div class="inventory-art" aria-hidden="true">
+          <div class="art-line"></div>
+          <div class="art-box box-one"><span>01</span></div>
+          <div class="art-box box-two"><span>02</span></div>
+          <div class="art-box box-three"><span>03</span></div>
+          <span class="art-tag">Cada producto cuenta.</span>
+        </div>
+        <p class="story-footer">
+          Hecho para llevar el control, sin complicaciones.
+        </p>
+      </section>
+      <section class="auth-panel">
+        <div class="auth-card">
+          <span class="eyebrow">BIENVENIDO A NEXO</span>
+          <h2 id="auth-title">Iniciar sesión</h2>
+          <p id="auth-description" class="muted">
+            Entra a tu espacio de trabajo.
+          </p>
+          <form id="login-form" novalidate>
+            <div id="setup-name" class="field oculto">
+              <label for="admin-nombre">Tu nombre</label
+              ><input
+                id="admin-nombre"
+                autocomplete="name"
+                maxlength="80"
+                placeholder="¿Cómo te llamas?"
+              />
+            </div>
+            <div class="field">
+              <label for="usuario">Usuario</label
+              ><input
+                id="usuario"
+                autocomplete="username"
+                maxlength="40"
+                placeholder="Tu nombre de usuario"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="clave">Contraseña</label
+              ><input
+                id="clave"
+                type="password"
+                autocomplete="current-password"
+                maxlength="128"
+                placeholder="Tu contraseña"
+                required
+              /><small id="password-hint" class="oculto"
+                >Usa entre 12 y 128 caracteres.</small
+              >
+            </div>
+            <p id="login-msg" class="msg-error" role="alert"></p>
+            <button id="btn-login" class="primary auth-submit" type="submit">
+              Entrar a mi inventario →
+            </button>
+          </form>
+          <p id="auth-note" class="auth-note">
+            Tu sesión es personal. Los productos se comparten con tu equipo.
+          </p>
+        </div>
+        <span class="auth-bottom">NEXO / GESTIÓN DE INVENTARIO</span>
+      </section>
+    </main>
+    <div id="admin" class="app-shell oculto">
+      <aside class="sidebar">
+        <a class="brand" href="/" aria-label="Nexo, inicio"
+          ><span class="brand-icon">n</span> nexo<span class="brand-dot"
+            >.</span
+          ></a
+        ><span class="nav-caption">ESPACIO DE TRABAJO</span>
+        <nav aria-label="Navegación principal">
+          <button
+            class="nav-item active"
+            data-view="catalogo"
+            aria-current="page"
+          >
+            <span aria-hidden="true">▦</span> Inventario
+            <span class="nav-arrow" aria-hidden="true">↗</span></button
+          ><button class="nav-item" data-view="actividad">
+            <span aria-hidden="true">◷</span> Actividad</button
+          ><button id="nav-users" class="nav-item oculto" data-view="usuarios">
+            <span aria-hidden="true">♧</span> Equipo
+          </button>
+        </nav>
+        <div class="sidebar-note">
+          <span class="live-dot"></span> Un equipo. Un inventario.
+          <p>Los cambios se guardan en la base de datos compartida.</p>
+        </div>
+        <div class="profile">
+          <span id="avatar" class="avatar">N</span>
+          <div>
+            <strong id="profile-name"></strong><small id="profile-role"></small>
+          </div>
+        </div>
+        <div class="profile-actions">
+          <button id="btn-password" class="text-button">Mi contraseña</button
+          ><button id="btn-logout" class="text-button">Salir ↗</button>
+        </div>
+      </aside>
+      <main class="workspace">
+        <header class="topbar">
+          <span
+            >Mi negocio <span class="breadcrumb">/</span>
+            <strong id="breadcrumb-view">Inventario</strong></span
+          >
+          <div class="connection">
+            <span class="live-dot"></span
+            ><span id="connection-label">Conectado</span>
+          </div>
+        </header>
+        <div id="global-error" class="banner error oculto" role="alert"></div>
+        <section id="view-catalogo" class="view">
+          <div class="page-heading">
+            <div>
+              <span class="eyebrow">TODO BAJO CONTROL</span>
+              <h1>Tu inventario<span class="accent">.</span></h1>
+              <p class="muted">
+                Una vista clara de tus productos y existencias.
+              </p>
+            </div>
+            <button id="btn-new" class="primary">＋ Nuevo producto</button>
+          </div>
+          <div class="stats">
+            <article class="stat">
+              <div class="stat-top">
+                Productos en catálogo <span aria-hidden="true">▦</span>
+              </div>
+              <strong id="contador-productos">0</strong
+              ><small>Referencias registradas</small>
+            </article>
+            <article class="stat">
+              <div class="stat-top">
+                Unidades disponibles <span aria-hidden="true">▤</span>
+              </div>
+              <strong id="stat-units">0</strong
+              ><small>Existencias totales</small>
+            </article>
+            <article class="stat stat-value">
+              <div class="stat-top">
+                Valor del inventario <span aria-hidden="true">↗</span>
+              </div>
+              <strong id="stat-value">Q0.00</strong
+              ><small>Precio × unidades disponibles</small>
+            </article>
+            <article class="stat">
+              <div class="stat-top">
+                Por reponer
+                <span class="warning-mark" aria-hidden="true">!</span>
+              </div>
+              <strong id="stat-low">0</strong
+              ><small>Productos con 5 unidades o menos</small>
+            </article>
+          </div>
+          <section class="catalog panel" aria-labelledby="catalog-title">
+            <div class="panel-heading">
+              <div>
+                <h2 id="catalog-title">Catálogo de productos</h2>
+                <p class="muted">
+                  Organiza, consulta y actualiza tus productos.
+                </p>
+              </div>
+              <div class="button-group">
+                <button id="btn-refresh" class="secondary">↻ Actualizar</button
+                ><button id="btn-export" class="secondary">
+                  ↓ Exportar CSV
+                </button>
+              </div>
+            </div>
+            <div class="filters">
+              <div class="search-field">
+                <span aria-hidden="true">⌕</span
+                ><label for="search" class="sr-only"
+                  >Buscar por nombre o código</label
+                ><input
+                  id="search"
+                  type="search"
+                  placeholder="Buscar por nombre o código…"
+                />
+              </div>
+              <label class="sr-only" for="filter-category">Categoría</label
+              ><select id="filter-category">
+                <option value="">Todas las categorías</option></select
+              ><label class="sr-only" for="filter-stock">Estado de stock</label
+              ><select id="filter-stock">
+                <option value="">Todos los estados</option>
+                <option value="available">Disponible</option>
+                <option value="low">Stock bajo</option>
+                <option value="out">Agotado</option></select
+              ><label class="sr-only" for="sort">Ordenar productos</label
+              ><select id="sort">
+                <option value="new">Más recientes</option>
+                <option value="name">Nombre A–Z</option>
+                <option value="price">Menor precio</option>
+                <option value="stock">Menor stock</option>
+              </select>
+            </div>
+            <div class="table-scroll">
+              <table id="tabla-productos">
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Precio</th>
+                    <th>Existencias</th>
+                    <th>Estado</th>
+                    <th class="actions-heading">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div id="empty-state" class="empty-state oculto">
+              <span aria-hidden="true">▦</span>
+              <h3 id="empty-title">Todavía no hay productos</h3>
+              <p id="empty-description">
+                Agrega el primero para empezar a organizar tu inventario.
+              </p>
+              <button id="btn-empty" class="secondary">Agregar producto</button>
+            </div>
+            <footer class="table-footer">
+              <span id="results-count"></span>
+              <div class="pagination">
+                <button
+                  id="page-prev"
+                  class="secondary"
+                  aria-label="Página anterior"
+                >
+                  ←</button
+                ><span id="page-label"></span
+                ><button
+                  id="page-next"
+                  class="secondary"
+                  aria-label="Página siguiente"
+                >
+                  →
+                </button>
+              </div>
+            </footer>
+          </section>
+          <div class="workspace-foot">
+            <span
+              ><span class="live-dot"></span> Datos compartidos con tu
+              equipo</span
+            ><span id="last-sync"></span>
+          </div>
+        </section>
+        <section id="view-actividad" class="view oculto">
+          <div class="page-heading">
+            <div>
+              <span class="eyebrow">EL HISTORIAL DE TU EQUIPO</span>
+              <h1>Actividad<span class="accent">.</span></h1>
+              <p class="muted">
+                Las últimas 100 acciones, con su responsable y fecha.
+              </p>
+            </div>
+            <button id="btn-activity-refresh" class="secondary">
+              ↻ Actualizar
+            </button>
+          </div>
+          <div id="activity-list" class="panel activity-list"></div>
+        </section>
+        <section id="view-usuarios" class="view oculto">
+          <div class="page-heading">
+            <div>
+              <span class="eyebrow">MEJOR, EN EQUIPO</span>
+              <h1>Personas y permisos<span class="accent">.</span></h1>
+              <p class="muted">
+                Administra quién tiene acceso a tu inventario.
+              </p>
+            </div>
+            <button id="btn-user-new" class="primary">＋ Nuevo usuario</button>
+          </div>
+          <div class="role-info">
+            <strong>Administrador</strong> gestiona productos y usuarios.
+            <strong>Editor</strong> gestiona productos y consulta la actividad.
+          </div>
+          <div class="panel table-scroll">
+            <table id="tabla-usuarios">
+              <thead>
+                <tr>
+                  <th>Persona</th>
+                  <th>Usuario</th>
+                  <th>Rol</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+    <dialog id="product-dialog" aria-labelledby="product-title">
+      <div class="dialog-heading">
+        <div>
+          <span class="eyebrow">CATÁLOGO</span>
+          <h2 id="product-title">Nuevo producto</h2>
+        </div>
+        <button
+          class="close-button"
+          data-close="product-dialog"
+          aria-label="Cerrar"
+        >
+          ×
+        </button>
+      </div>
+      <form id="product-form" novalidate>
+        <div class="field">
+          <label for="nombre">Nombre del producto</label
+          ><input
+            id="nombre"
+            maxlength="100"
+            placeholder="Ej. Teclado inalámbrico"
+            required
+          />
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="sku">Código único</label
+            ><input
+              id="sku"
+              maxlength="30"
+              placeholder="TEC-002"
+              required
+            /><small>Letras, números y guiones.</small>
+          </div>
+          <div class="field">
+            <label for="categoria">Categoría</label
+            ><input
+              id="categoria"
+              list="categories"
+              maxlength="50"
+              placeholder="Ej. Periféricos"
+              required
+            /><datalist id="categories"></datalist>
+          </div>
+          <div class="field">
+            <label for="precio">Precio (Q)</label
+            ><input
+              id="precio"
+              type="number"
+              min="0.01"
+              max="10000000"
+              step="0.01"
+              placeholder="0.00"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="stock">Unidades en stock</label
+            ><input
+              id="stock"
+              type="number"
+              min="0"
+              max="1000000"
+              step="1"
+              placeholder="0"
+              required
+            />
+          </div>
+        </div>
+        <p id="form-msg" class="msg-error" role="alert"></p>
+        <div class="dialog-actions">
+          <button type="button" class="secondary" data-close="product-dialog">
+            Cancelar</button
+          ><button id="btn-guardar" class="primary" type="submit">
+            Agregar producto
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="delete-dialog" aria-labelledby="delete-title">
+      <div class="delete-icon" aria-hidden="true">!</div>
+      <h2 id="delete-title">¿Eliminar producto?</h2>
+      <p id="delete-description" class="muted"></p>
+      <p class="muted">
+        Esta acción eliminará el producto para todo el equipo.
+      </p>
+      <p id="delete-msg" class="msg-error" role="alert"></p>
+      <div class="dialog-actions">
+        <button class="secondary" data-close="delete-dialog">Cancelar</button
+        ><button id="btn-delete-confirm" class="danger">Sí, eliminar</button>
+      </div>
+    </dialog>
+    <dialog id="user-dialog" aria-labelledby="user-title">
+      <div class="dialog-heading">
+        <div>
+          <span class="eyebrow">EQUIPO</span>
+          <h2 id="user-title">Nuevo usuario</h2>
+        </div>
+        <button
+          class="close-button"
+          data-close="user-dialog"
+          aria-label="Cerrar"
+        >
+          ×
+        </button>
+      </div>
+      <form id="user-form" novalidate>
+        <div class="field">
+          <label for="user-name">Nombre completo</label
+          ><input id="user-name" maxlength="80" required />
+        </div>
+        <div class="field">
+          <label for="user-username">Nombre de usuario</label
+          ><input
+            id="user-username"
+            autocomplete="off"
+            maxlength="40"
+            required
+          />
+        </div>
+        <div class="field">
+          <label for="user-password">Contraseña inicial</label
+          ><input
+            id="user-password"
+            type="password"
+            autocomplete="new-password"
+            minlength="12"
+            maxlength="128"
+            required
+          /><small
+            >Entre 12 y 128 caracteres. La persona podrá cambiarla al
+            entrar.</small
+          >
+        </div>
+        <div class="field">
+          <label for="user-role">Rol</label
+          ><select id="user-role">
+            <option value="editor">Editor</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+        <p id="user-msg" class="msg-error" role="alert"></p>
+        <div class="dialog-actions">
+          <button class="secondary" type="button" data-close="user-dialog">
+            Cancelar</button
+          ><button class="primary" type="submit">Crear usuario</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="password-dialog" aria-labelledby="password-title">
+      <div class="dialog-heading">
+        <h2 id="password-title">Cambiar contraseña</h2>
+        <button
+          class="close-button"
+          data-close="password-dialog"
+          aria-label="Cerrar"
+        >
+          ×
+        </button>
+      </div>
+      <form id="password-form" novalidate>
+        <div class="field">
+          <label for="current-password">Contraseña actual</label
+          ><input
+            id="current-password"
+            type="password"
+            autocomplete="current-password"
+            maxlength="128"
+            required
+          />
+        </div>
+        <div class="field">
+          <label for="new-password">Nueva contraseña</label
+          ><input
+            id="new-password"
+            type="password"
+            autocomplete="new-password"
+            minlength="12"
+            maxlength="128"
+            required
+          /><small
+            >Entre 12 y 128 caracteres. Cerrará tus otras sesiones.</small
+          >
+        </div>
+        <p id="password-msg" class="msg-error" role="alert"></p>
+        <div class="dialog-actions">
+          <button class="secondary" type="button" data-close="password-dialog">
+            Cancelar</button
+          ><button class="primary" type="submit">Guardar contraseña</button>
+        </div>
+      </form>
+    </dialog>
+    <div id="toast" class="toast oculto" role="status" aria-live="polite"></div>
+  </body>
 </html>

@@ -1,9 +1,5 @@
 node_modules/
 cypress/videos/
 cypress/screenshots/
-data/
-backups/
-artifacts/
-cypress/downloads/
-.env
 *.log
+cypress/downloads/

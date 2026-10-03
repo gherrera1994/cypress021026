@@ -1,0 +1,32 @@
+name: Demo original
+on:
+  push:
+    paths: ['admin-productos-demo/**', '.github/workflows/demo.yml']
+  pull_request:
+    paths: ['admin-productos-demo/**', '.github/workflows/demo.yml']
+permissions:
+  contents: read
+jobs:
+  demo:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: admin-productos-demo/package-lock.json
+      - uses: cypress-io/github-action@v7
+        with:
+          working-directory: admin-productos-demo
+          start: npm start
+          wait-on: http://localhost:3001
+          browser: electron
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evidencia-demo-original
+          path: |
+            admin-productos-demo/cypress/screenshots
+            admin-productos-demo/cypress/videos
+          if-no-files-found: ignore
