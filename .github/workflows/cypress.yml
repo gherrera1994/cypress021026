@@ -1,0 +1,34 @@
+name: API y navegador
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: admin-productos
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: admin-productos/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - name: Pruebas de navegador con base aislada
+        uses: cypress-io/github-action@v7
+        with:
+          working-directory: admin-productos
+          install: false
+          browser: electron
+      - name: Capturas y videos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidencia-cypress
+          path: |
+            admin-productos/cypress/screenshots
+            admin-productos/cypress/videos
+          if-no-files-found: ignore
